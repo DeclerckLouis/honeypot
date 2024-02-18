@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+  honeypot-ssh:
+    #### BUILD FROM DOCKERFILE
+    build: 
+      context: .
+      dockerfile: dockerfile-ssh
+    container_name: HoneyPot-ssh
+    ports:
+      - "3022:22"
+    networks:
+      - HoneyPotNet
+    volumes:
+      - /var/log/honeypot:/var/log/honeypot
+    restart: unless-stopped
+
+  honeypot-nginx:
+    #### BUILD FROM DOCKERFILE
+    build: 
+      context: .
+      dockerfile: dockerfile-nginx
+    container_name: HoneyPot-nginx
+    ports:
+      - "6443:443"
+      - "6080:80"
+      - "6022:22"
+    networks:
+      - HoneyPotNet
+    volumes:
+      - /var/log/honeypot:/var/log/honeypot
+    restart: unless-stopped
+
+networks:
+  HoneyPotNet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24
+          gateway: 10.10.10.1
+          ip_range: 10.10.10.10/24
+
+
+
+  # webapp:
+  #   #### PULL FROM DOCKER HUB
+  #   image: declercklouis/webapp:latest
+    

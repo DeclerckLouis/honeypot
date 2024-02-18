@@ -1,0 +1,40 @@
+FROM nginx:latest
+
+# USERS
+RUN useradd -m -d /home/admin admin
+RUN echo 'admin:admin' | chpasswd
+
+
+# SSH
+# Install necessary packages
+RUN apt-get update && apt-get install -y openssh-server openssl git rsyslog
+
+# Configure SSH
+RUN mkdir /var/run/sshd \
+    && echo 'root:12OKQ8jqsd9!qsd' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+
+# NGINX
+# Create key directory & keys
+WORKDIR /var/keys
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ssl.key -out ssl.crt -subj "/C=BE/ST=Namur/L=Wallonie/O=undefined/CN=www.undefinedcontainer.com"
+
+# Copy NGINX configuration file
+COPY ./config/nginx.conf /etc/nginx/conf.d/honey.conf
+
+# Copy html files
+COPY ./files/nginx-container/html /usr/share/nginx/html
+
+#make scripts dir and copy scripts
+RUN mkdir /tmp/scripts
+WORKDIR /tmp/scripts
+COPY ./files/nginx-container/scripts .
+
+# Start SSH server and NGINX
+CMD ["/bin/bash", "/tmp/scripts/start.sh"]
+
+WORKDIR /home/admin
+# Expose ports
+EXPOSE 443
+EXPOSE 22
