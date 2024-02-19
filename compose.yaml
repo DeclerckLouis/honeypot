@@ -7,12 +7,13 @@ services:
       context: .
       dockerfile: dockerfile-ssh
     container_name: HoneyPot-ssh
+    hostname: bamboozled
     ports:
       - "3022:22"
     networks:
       - HoneyPotNet
     volumes:
-      - /var/log/honeypot:/var/log/honeypot
+      - /var/log/honeypot/ssh.log.d/auth.log:/var/log/auth.log
     restart: unless-stopped
 
   honeypot-nginx:
@@ -21,6 +22,7 @@ services:
       context: .
       dockerfile: dockerfile-nginx
     container_name: HoneyPot-nginx
+    hostname: bamboozled-webserver
     ports:
       - "6443:443"
       - "6080:80"
@@ -28,7 +30,7 @@ services:
     networks:
       - HoneyPotNet
     volumes:
-      - /var/log/honeypot:/var/log/honeypot
+      - /var/log/honeypot/nginx.log.d/auth.log:/var/log/auth.log
     restart: unless-stopped
 
 networks:
